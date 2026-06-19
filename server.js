@@ -1,12 +1,11 @@
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
-const FormData = require("form-data");
 
 const app = express();
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 25 * 1024 * 1024 }, // 25 MB máx
+  limits: { fileSize: 25 * 1024 * 1024 },
 });
 
 app.use(cors());
@@ -19,6 +18,8 @@ const PROMPT = `Resumí la siguiente conversación con un cliente en texto plano
 
 Conversación:
 `;
+
+app.get("/", (_req, res) => res.json({ status: "ok", app: "Arconote Server" }));
 
 // Resumir con Claude
 app.post("/summarize", async (req, res) => {
@@ -44,6 +45,7 @@ app.post("/summarize", async (req, res) => {
     const data = await response.json();
     res.status(response.status).json(data);
   } catch (err) {
+    console.error("Error en /summarize:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -54,30 +56,24 @@ app.post("/transcribe", upload.single("file"), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: "Falta el archivo de audio" });
     if (!OPENAI_KEY) return res.status(500).json({ error: "OPENAI_KEY no configurada" });
 
-    const form = new FormData();
-    form.append("file", req.file.buffer, {
-      filename: req.file.originalname || "audio.ogg",
-      contentType: req.file.mimetype,
-    });
-    form.append("model", "whisper-1");
+    const formData = new FormData();
+    const blob = new Blob([req.file.buffer], { type: req.file.mimetype });
+    formData.append("file", blob, req.file.originalname || "audio.ogg");
+    formData.append("model", "whisper-1");
 
     const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_KEY}`,
-        ...form.getHeaders(),
-      },
-      body: form,
+      headers: { Authorization: `Bearer ${OPENAI_KEY}` },
+      body: formData,
     });
 
     const data = await response.json();
     res.status(response.status).json(data);
   } catch (err) {
+    console.error("Error en /transcribe:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
-app.get("/", (req, res) => res.json({ status: "ok", app: "Arconote Server" }));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Arconote server corriendo en puerto ${PORT}`));
