@@ -14,7 +14,7 @@ app.use(express.json({ limit: "1mb" }));
 const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY;
 const OPENAI_KEY = process.env.OPENAI_KEY;
 
-const PROMPT = `Resumí la siguiente conversación con un cliente en texto plano, sin títulos, sin bullets, sin markdown. Escribí en primera persona desde mi perspectiva (soy quien atiende al cliente). Usá "le consulté", "le pedí", "quedé en revisar", etc. en lugar de hablar de mí en tercera persona. Uno o dos párrafos cortos, directo y conciso. Respondé en el mismo idioma que la conversación.
+const PROMPT = `Resumí la siguiente conversación con un cliente en texto plano, sin títulos, sin bullets, sin markdown. Escribí en primera persona desde mi perspectiva (soy quien atiende al cliente). Usá "le consulté", "le pedí", "quedé en revisar", etc. en lugar de hablar de mí en tercera persona. Máximo un párrafo corto, muy conciso, solo lo más importante. Respondé en el mismo idioma que la conversación.
 
 Conversación:
 `;
